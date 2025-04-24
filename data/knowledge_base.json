@@ -1,0 +1,110 @@
+{
+  "metadata": {
+    "title": "MCP Knowledge Base",
+    "description": "Base de conocimientos sobre Model Context Protocol (MCP)",
+    "version": "1.0",
+    "created": "2025-04-23",
+    "updated": "2025-04-23"
+  },
+  "categories": [
+    {
+      "id": "intro",
+      "name": "Introducción a MCP",
+      "description": "Conceptos básicos y fundamentos de MCP"
+    },
+    {
+      "id": "tools",
+      "name": "Herramientas MCP",
+      "description": "Herramientas y su implementación en MCP"
+    },
+    {
+      "id": "resources",
+      "name": "Recursos MCP",
+      "description": "Recursos y su implementación en MCP"
+    },
+    {
+      "id": "prompts",
+      "name": "Prompts MCP",
+      "description": "Prompts y su implementación en MCP"
+    },
+    {
+      "id": "security",
+      "name": "Seguridad MCP",
+      "description": "Aspectos de seguridad en implementaciones MCP"
+    }
+  ],
+  "entries": [
+    {
+      "id": "mcp-definition",
+      "title": "¿Qué es MCP?",
+      "category": "intro",
+      "tags": ["definición", "fundamentos", "básico"],
+      "content": "El Model Context Protocol (MCP) es un protocolo estandarizado que permite a aplicaciones proveer contexto estructurado para Modelos de Lenguaje de Gran Escala (LLMs). Separa la preocupación de proporcionar contexto de la interacción directa con el LLM. Su propósito principal es permitir que los LLMs descubran y utilicen capacidades externas de manera dinámica y segura, extendiendo sus funcionalidades nativas.",
+      "related": ["mcp-architecture", "mcp-components"]
+    },
+    {
+      "id": "mcp-architecture",
+      "title": "Arquitectura MCP",
+      "category": "intro",
+      "tags": ["arquitectura", "diseño", "fundamentos"],
+      "content": "MCP establece un patrón cliente-servidor donde: 1) El Servidor MCP expone capacidades (recursos, herramientas, prompts) a través de una interfaz estandarizada, 2) El Cliente MCP conecta con servidores para descubrir y utilizar capacidades durante la interacción con LLMs, y 3) El LLM utiliza capacidades externas a través del contexto estructurado proporcionado por el cliente. Este modelo permite una clara separación de responsabilidades: el servidor se enfoca en implementar funcionalidades específicas, el cliente maneja la comunicación entre el LLM y los servidores, y el LLM puede descubrir y utilizar capacidades externas de forma transparente.",
+      "related": ["mcp-definition", "mcp-components"]
+    },
+    {
+      "id": "mcp-components",
+      "title": "Componentes MCP",
+      "category": "intro",
+      "tags": ["componentes", "fundamentos", "herramientas", "recursos", "prompts"],
+      "content": "MCP define tres tipos de capacidades fundamentales: 1) Recursos: Proporcionan datos e información al LLM sin procesamiento significativo (similar a endpoints GET en una API REST). 2) Herramientas: Permiten al LLM ejecutar acciones y producir efectos secundarios (similar a endpoints POST). 3) Prompts: Definen plantillas reusables para estructurar interacciones con el LLM. Estos componentes permiten acceso a datos estructurados y fuentes de información, ejecución de cómputos y acciones en sistemas externos, y reutilización de patrones de interacción probados con LLMs.",
+      "related": ["mcp-definition", "tools-implementation", "resources-implementation", "prompts-implementation"]
+    },
+    {
+      "id": "tools-implementation",
+      "title": "Implementación de Herramientas MCP",
+      "category": "tools",
+      "tags": ["herramientas", "implementación", "código"],
+      "content": "Las herramientas en MCP son funciones que el LLM puede invocar para realizar acciones. Se implementan utilizando el método tool() del servidor MCP, especificando un nombre, un esquema de validación (típicamente con Zod), y una función de manejo. Las herramientas pueden incluir middleware para validación o procesamiento adicional. Ejemplo básico: server.tool('saludar', { nombre: z.string().describe('Nombre de la persona a saludar') }, async ({ nombre }) => { return { content: [{ type: 'text', text: `Hola, ${nombre}!` }] }; });",
+      "related": ["mcp-components", "security-zod"]
+    },
+    {
+      "id": "resources-implementation",
+      "title": "Implementación de Recursos MCP",
+      "category": "resources",
+      "tags": ["recursos", "implementación", "código"],
+      "content": "Los recursos en MCP proporcionan datos al LLM. Se implementan con el método resource() del servidor MCP, especificando un nombre, una URI (o patrón de URI), y una función que devuelve el contenido. Pueden ser estáticos o paramétricos. Ejemplo: server.resource('documentacion', 'docs://general', async (uri) => ({ contents: [{ uri: uri.href, text: 'Documentación general del sistema...' }] }));",
+      "related": ["mcp-components"]
+    },
+    {
+      "id": "prompts-implementation",
+      "title": "Implementación de Prompts MCP",
+      "category": "prompts",
+      "tags": ["prompts", "implementación", "código"],
+      "content": "Los prompts en MCP son plantillas reutilizables para interacciones con LLMs. Se implementan con el método prompt() del servidor MCP, especificando un nombre, un esquema de parámetros, y una función que construye el mensaje. Ejemplo: server.prompt('analizar-codigo', { codigo: z.string() }, ({ codigo }) => ({ messages: [{ role: 'user', content: { type: 'text', text: `Analiza este código:\n\n${codigo}` } }] }));",
+      "related": ["mcp-components"]
+    },
+    {
+      "id": "security-zod",
+      "title": "Validación con Zod en MCP",
+      "category": "security",
+      "tags": ["seguridad", "validación", "zod"],
+      "content": "Zod es esencial para validar entradas en servidores MCP. Permite definir esquemas de tipos fuertemente tipados con validación en tiempo de ejecución. Ejemplo básico: const esquemaUsuario = z.object({ nombre: z.string().min(3).max(50), edad: z.number().int().positive().optional(), email: z.string().email(), rol: z.enum(['admin', 'usuario', 'invitado']) }); También se pueden usar refinamientos para validaciones más complejas.",
+      "related": ["tools-implementation", "security-principles"]
+    },
+    {
+      "id": "security-principles",
+      "title": "Principios de Seguridad en MCP",
+      "category": "security",
+      "tags": ["seguridad", "buenas prácticas", "principios"],
+      "content": "La seguridad en MCP se fundamenta en varios principios clave: 1) Validación estricta de entrada usando Zod, 2) Principio de Privilegio Mínimo, limitando el acceso solo a lo necesario, 3) Autenticación y Autorización para servidores MCP remotos, 4) Sanitización de datos para prevenir vulnerabilidades como XSS, 5) Manejo seguro de rutas de archivos y recursos. La implementación correcta de estos principios es fundamental para servidores MCP seguros.",
+      "related": ["security-zod", "security-auth"]
+    },
+    {
+      "id": "security-auth",
+      "title": "Autenticación en MCP",
+      "category": "security",
+      "tags": ["seguridad", "autenticación", "jwt"],
+      "content": "Para servidores MCP remotos, es importante implementar autenticación adecuada. MCP soporta diferentes mecanismos de autenticación, siendo JWT (JSON Web Tokens) uno de los más comunes. Ejemplo de configuración: const authProvider = new JWTAuthProvider({ secret: process.env.JWT_SECRET, algorithms: ['HS256'], headerName: 'Authorization' }); const server = new McpServer({ transport: { type: 'sse', options: { auth: { provider: authProvider, endpoints: { sse: true, messages: true } } } } });",
+      "related": ["security-principles"]
+    }
+  ]
+}
